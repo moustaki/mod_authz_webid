@@ -1,0 +1,33 @@
+AC_INIT(WebID authorization module for Apache 2, 1.0, presbrey@csail.mit.edu, mod_authz_webid)
+AC_PREREQ(2.57)
+AC_CONFIG_SRCDIR(mod_authz_webid.c)
+AC_REVISION($Revision: 26167 $)
+
+AC_PROG_CC
+AC_PROG_CC_C_O
+
+AC_PATH_PROGS(PKG_CONFIG, pkg-config)
+if test -z "$PKG_CONFIG"; then
+    AC_MSG_ERROR([cannot locate pkg-config])
+fi
+
+if ! $PKG_CONFIG redland --exists; then
+    AC_MSG_ERROR([cannot locate Redland RDF Library - see http://librdf.org/])
+fi
+
+AC_ARG_WITH(apache,
+    AC_HELP_STRING([--with-apache=DIR],[use Apache in DIR]),
+    [with_apache="$withval:$PATH"], [with_apache="$PATH"])
+AC_PATH_PROGS([APXS], [apxs apxs2], [], [$with_apache])
+
+if test -z "$APXS"; then
+    AC_MSG_ERROR([cannot locate Apache apxs])
+fi
+
+PKG_CFLAGS="`$PKG_CONFIG --cflags redland`"
+PKG_LIBS="`$PKG_CONFIG --libs redland`"
+AC_SUBST(PKG_CFLAGS)
+AC_SUBST(PKG_LIBS)
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

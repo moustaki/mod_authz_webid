@@ -1,0 +1,9 @@
+all:
+	@APXS@ -c @PKG_CFLAGS@ @PKG_LIBS@ mod_authz_webid.c
+
+install:
+	@APXS@ -c -i @PKG_CFLAGS@ @PKG_LIBS@ mod_authz_webid.c
+
+clean:
+	rm -f mod_authz_webid.{la,lo,slo,o} -r .libs
+	rm -f config.log config.status configure Makefile -r autom4te.cache

@@ -1,0 +1,94 @@
+mod_authz_webid
+WebID authorization module for Apache 2
+
+* This authorization module checks a user's WebID against a
+  directory-local .meta.n3 file (like an .htaccess)
+
+* .meta.n3 files use the ACL ontology available at:
+  <http://www.w3.org/ns/auth/acl>
+
+* Use mod_authn_webid to require SSL users to present valid WebIDs:
+  <http://dig.csail.mit.edu/2009/mod_authn_webid/>
+
+The latest version of this module can be found at:
+<http://dig.csail.mit.edu/2009/mod_authz_webid/>
+<https://svn.csail.mit.edu/dig/2009/mod_authz_webid/>
+
+Visit the W3 ESW wiki for more information about Web Access Control:
+<http://esw.w3.org/topic/WebAccessControl>
+
+
+= Prerequisites =
+
+Development versions of the following packages for your Linux
+distribution (yum):
+
+* Apache 2.2 (httpd-devel)
+* Redland 1.0.7 (redland-devel)
+
+These are the versions I used for development, though I would expect other
+minor versions of these packages to also work.
+
+
+= Installing =
+
+As root, the following compilation procedure should work:
+# autoconf
+# ./configure
+# make install
+
+The 'make install' command calls Apache's apxs utility to create and install
+the mod_authz_webid DSO using default Apache module installation parameters.
+
+
+= Example Configuration =
+
+== httpd.conf ==
+
+LoadModule authn_webid_module modules/mod_authn_webid.so
+LoadModule authz_webid_module modules/mod_authz_webid.so
+<Directory />
+    Options FollowSymLinks Indexes
+    AuthType WebID
+    Require valid-user
+    Dav On
+</Directory>
+
+== .meta.n3 ==
+
+@prefix acl: <http://www.w3.org/ns/auth/acl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+[
+    rdf:type acl:Authorization ;
+    acl:mode acl:Read ;
+    acl:mode acl:Write ;
+    acl:mode acl:Control ;
+    acl:accessTo <.> ;
+    acl:defaultForNew <.> ;
+    acl:agent <http://presbrey.mit.edu/foaf#presbrey> ;
+] .
+
+
+= Authorization Details =
+
+Agents are authorized using the following SPARQL query:
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX acl: <http://www.w3.org/ns/auth/acl#>
+SELECT ?path WHERE {
+    ?rule rdf:type acl:Authorization ;
+          acl:accessTo ?path ;
+          acl:mode acl:%s ;
+          acl:agent %s .
+}
+
+Supported acl:mode: acl:Read, acl:Write, acl:Control
+
+
+= Credits =
+
+Joe Presbrey <presbrey@csail.mit.edu>
+Feel free to contact me with any comments or suggestions.
+
+$Id: README 26498 2009-06-22 23:08:58Z jambo $
